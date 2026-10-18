@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { formatMonth } from '../state/reducer'
 import { SCHOOLS, type Arrangement, type Preferences, type SchoolId } from '../types/api'
+import { CharCount } from './CharCount'
 import { ChipInput } from './ChipInput'
 import type { FieldErrors } from '../lib/validation'
 
@@ -181,12 +182,10 @@ export function PreferencesForm({ preferences, onChange, errors }: PreferencesFo
           className={`textarea${errors.additional ? ' has-error' : ''}`}
           value={preferences.additional}
           maxLength={500}
-          aria-describedby="pref-additional-hint pref-additional-count"
+          aria-describedby="pref-additional-hint"
           onChange={(event) => update({ additional: event.target.value })}
         />
-        <p id="pref-additional-count" className="field__count">
-          {preferences.additional.length} / 500
-        </p>
+        <CharCount length={preferences.additional.length} max={500} />
       </div>
     </section>
   )

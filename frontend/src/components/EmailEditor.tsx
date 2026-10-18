@@ -1,20 +1,44 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router'
 import { emailText, safeFileName, wordCount } from '../lib/format'
 import type { DraftState } from '../state/reducer'
 import { InlineAlert } from './InlineAlert'
 import { useToast } from './Toast'
+
+/** unsaved: not in the tracker yet · saved: tracker has this exact text · changed: tracker has an older version */
+export type TrackerSaveState = 'unsaved' | 'saved' | 'changed'
 
 interface EmailEditorProps {
   draft: DraftState
   candidateId: string
   canGenerate: boolean
   generateHint: string | null
+  trackerState: TrackerSaveState
+  trackerStatus: string | null
   onGenerate: () => void
   onRegenerate: () => void
   onEdit: (patch: { subject?: string; body?: string }) => void
+  onSaveToTracker: () => void
 }
 
-export function EmailEditor({ draft, candidateId, canGenerate, generateHint, onGenerate, onRegenerate, onEdit }: EmailEditorProps) {
+const SAVE_LABEL: Record<TrackerSaveState, string> = {
+  unsaved: 'Save to tracker',
+  saved: 'Saved to tracker',
+  changed: 'Update tracker copy',
+}
+
+export function EmailEditor({
+  draft,
+  candidateId,
+  canGenerate,
+  generateHint,
+  trackerState,
+  trackerStatus,
+  onGenerate,
+  onRegenerate,
+  onEdit,
+  onSaveToTracker,
+}: EmailEditorProps) {
   const toast = useToast()
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
   const [downloadFailed, setDownloadFailed] = useState(false)
@@ -146,6 +170,15 @@ export function EmailEditor({ draft, candidateId, canGenerate, generateHint, onG
             </button>
             <button
               type="button"
+              className="btn btn-secondary"
+              aria-disabled={trackerState === 'saved' || undefined}
+              aria-describedby="tracker-note"
+              onClick={() => trackerState !== 'saved' && onSaveToTracker()}
+            >
+              {SAVE_LABEL[trackerState]}
+            </button>
+            <button
+              type="button"
               className="btn-text"
               onClick={onRegenerate}
               disabled={!canGenerate || loading}
@@ -154,6 +187,17 @@ export function EmailEditor({ draft, candidateId, canGenerate, generateHint, onG
               {loading ? 'Writing your draft…' : 'Regenerate'}
             </button>
           </div>
+          <p id="tracker-note" className="field__hint">
+            {trackerState === 'unsaved' ? (
+              'Keep this email and track replies on this device.'
+            ) : (
+              <>
+                {trackerState === 'changed' ? 'Your tracker has an earlier version of this email. ' : 'In your tracker'}
+                {trackerStatus && trackerState === 'saved' ? ` · ${trackerStatus}. ` : ''}
+                <Link to="/tracker">Open tracker</Link>
+              </>
+            )}
+          </p>
           {generateHint && (
             <p id="generate-hint" className="field__hint">
               {generateHint}

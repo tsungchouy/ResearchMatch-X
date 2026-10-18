@@ -1,6 +1,7 @@
 import { forwardRef } from 'react'
 import type { FieldErrors } from '../lib/validation'
 import type { Experience, Profile } from '../types/api'
+import { CharCount } from './CharCount'
 import { ChipInput } from './ChipInput'
 
 interface ProfileEditorProps {
@@ -150,12 +151,9 @@ export const ProfileEditor = forwardRef<HTMLHeadingElement, ProfileEditorProps>(
                     className="textarea textarea--short"
                     value={exp.description}
                     maxLength={500}
-                    aria-describedby={`${descId}-count`}
                     onChange={(event) => updateExperience(exp.id, { description: event.target.value })}
                   />
-                  <p id={`${descId}-count`} className="field__count">
-                    {exp.description.length} / 500
-                  </p>
+                  <CharCount length={exp.description.length} max={500} />
                 </div>
               </li>
             )

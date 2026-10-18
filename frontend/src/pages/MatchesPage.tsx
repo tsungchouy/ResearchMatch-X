@@ -321,6 +321,9 @@ export function MatchesPage() {
               {candidates.length === 1 ? '1 match' : `${candidates.length} matches`}
             </h2>
             {displayed?.retrievedAt && <p className="results__date">Retrieved {formatDateTime(displayed.retrievedAt)}</p>}
+            {displayed?.mode === 'demo' && (
+              <p className="results__note">Sample data: these people, labs and sources are fictional, not live university pages.</p>
+            )}
           </div>
 
           {running && search.previousJob && (

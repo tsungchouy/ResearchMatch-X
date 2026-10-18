@@ -9,7 +9,7 @@ Two modes, always labeled in the header:
 - **Demo · Sample data** — works with no API key. Uses clearly fictional people, labs and sources (every source says "Sample source — not a live university page"). No resume is analyzed and no live search runs.
 - **Live** — the backend calls the OpenAI Responses API with the built-in `web_search` tool, restricted to one university domain per search (CMU `cmu.edu`, Stanford `stanford.edu`, UW `washington.edu`). If Live is not configured or fails, the UI says so; it never falls back to sample data silently.
 
-The app never sends email, guesses professor addresses, or stores resumes beyond the in-memory session.
+The app never sends email, guesses professor addresses, or stores resumes beyond the in-memory session. The only thing kept after you leave is what you explicitly save to the outreach tracker (see below).
 
 ## Repository layout
 
@@ -29,7 +29,7 @@ Tested with **Node v25.9.0 / npm 11.12.1** and **Python 3.14.4** on macOS. Node 
 ## Install from a clean directory
 
 ```bash
-git clone https://github.com/tsungchouy/researchmatch-x.git
+git clone https://github.com/tsungchouy/ResearchMatch-X.git
 cd researchmatch-x
 
 # Backend
@@ -85,6 +85,16 @@ Frontend: `API_PROXY_TARGET` (dev server only) proxies `/api` somewhere other th
 2. Edit anything, tick "I have reviewed my background and preferences.", then **Find research matches**.
 3. Filter matches, open **Review match** to read the reasons, recruitment evidence and sources, tick the review checkbox and choose **Prepare outreach**.
 4. Pick which experiences the email may use, confirm, **Generate draft**, edit, then **Copy email** or **Download .txt**.
+5. Optionally choose **Save to tracker**, then open **Outreach tracker** (next to the steps) to record status, dates and notes.
+
+## Outreach tracker
+
+`/tracker` keeps a list of emails you chose to save, so you can follow up later:
+
+- Each record holds the professor or lab, university, first source link (Live only), the email subject and body, a status (Not sent yet, Sent, Replied, Meeting scheduled, Declined, No response), sent date, follow-up date and notes. Choosing **Sent** fills in today's date if none is set. Records past their follow-up date while still waiting for a reply are marked **Follow-up due**.
+- Saving the same professor again updates the saved email but keeps status, dates and notes. Demo records are labeled **Sample** and kept apart from Live records.
+- Records are stored **only in this browser's localStorage** (`researchmatch.tracker.v1`), including the email text. Nothing is sent to the backend. **Start over** does not clear them; use **Remove** or **Clear tracker**. **Download CSV** exports the list (cells starting with `=`, `+`, `-` or `@` are escaped so spreadsheets don't run them).
+- If the browser refuses to store data (some private modes), the page says changes aren't being saved.
 
 ## Testing Live
 
@@ -114,17 +124,17 @@ npm run test:e2e       # Playwright
 
 The spec suggested `tests/e2e/` at the repo root; the specs live in `frontend/tests/e2e/` so they resolve the frontend's `node_modules`.
 
-### Results on 2026-10-17
+### Results on 2026-10-18
 
 | Suite | Result |
 | --- | --- |
 | Backend pytest | 27 passed (URL domain rules, sources must exist, missing recruitment evidence → unknown, session isolation, profile version mismatch rejects drafts, idempotent job creation, partial/failed/cancel/retry, PDF validation, OpenAI gateway request/response shape via a mock transport) |
 | Frontend lint (oxlint) | clean |
 | TypeScript + Vite build | clean |
-| Vitest | 14 passed (invalidation chain, late responses ignored, mode switch reset, draft edit protection) |
-| Playwright | 13 passed (full Demo flow without a key; Live-not-configured message; mobile upload input, drawer and email editing at 390×844; clipboard failure; partial failure + retry via test adapter; draft failure keeps input; cancel; validation focus; route guards and refresh; Live wiring against the OpenAI stub including partial failure) |
+| Vitest | 22 passed (invalidation chain, late responses ignored, mode switch reset, draft edit protection; tracker save/update rules, follow-up logic, storage parsing that skips invalid or unsafe entries, CSV escaping) |
+| Playwright | 16 passed (full Demo flow without a key; Live-not-configured message; mobile upload input, drawer and email editing at 390×844; clipboard failure; partial failure + retry via test adapter; draft failure keeps input; cancel; validation focus; route guards and refresh; Live wiring against the OpenAI stub including partial failure; tracker save → status → reload → CSV → remove; Start over keeps the tracker; tracker at 360 px) |
 
-Layouts were also checked by screenshot at 1440×900, 1024×768, 390×844, 360×800 and 320 px (no horizontal scroll), and a runtime contrast scan found no enabled text below 4.5:1.
+Layouts were also checked by screenshot at 1440×900, 1024×768, 390×844, 360×800 and 320 px (no horizontal scroll), and a runtime contrast scan of the matches, outreach and tracker pages found no enabled text below 4.5:1.
 
 ## Verification status (honest)
 
@@ -134,10 +144,10 @@ Layouts were also checked by screenshot at 1440×900, 1024×768, 390×844, 360×
 
 ## Limitations
 
-- **Single process, in-memory store.** Sessions, confirmed profiles, search jobs and drafts live in memory for 30 minutes. Run one uvicorn worker; restarting the server or refreshing the page loses the session (the app says so after a refresh).
+- **Single process, in-memory store.** Sessions, confirmed profiles, search jobs and drafts live in memory for 30 minutes. Run one uvicorn worker; restarting the server or refreshing the page loses the session (the app says so after a refresh). Only tracker records survive, and only in the same browser.
 - Only three universities, at most three candidates per school and five overall.
 - Recruitment status reflects what a page says at retrieval time; it can be stale.
-- No login, persistence, or email sending — by design for this prototype.
+- No login, server-side persistence, cross-device sync, or email sending — by design for this prototype.
 
 ## Deployment
 

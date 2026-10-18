@@ -1,23 +1,38 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { usePageHeading } from '../app/usePageHeading'
+import { CharCount } from '../components/CharCount'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { EmailEditor } from '../components/EmailEditor'
+import { EmailEditor, type TrackerSaveState } from '../components/EmailEditor'
 import { RecruitmentBadge } from '../components/RecruitmentBadge'
-import { SourceLink } from '../components/SourceLink'
-import { citationNumbers } from '../lib/format'
+import { useToast } from '../components/Toast'
 import { createRequestKey, toErrorBody } from '../services/client'
 import { useApp } from '../state/context'
+import { findRecord, STATUS_LABEL } from '../state/tracker'
+import { useTracker } from '../state/trackerContext'
 import { schoolName, type Candidate, type DraftRequest } from '../types/api'
 
 export function OutreachPage({ candidate }: { candidate: Candidate }) {
   const { state, dispatch, service } = useApp()
+  const tracker = useTracker()
+  const toast = useToast()
   const headingRef = usePageHeading('Prepare your outreach')
   const [confirmReplace, setConfirmReplace] = useState(false)
   const profile = state.confirmedProfile!
   const selection = state.selection!
   const { outreach, draft } = state
-  const numbers = citationNumbers(candidate)
+
+  const saved = findRecord(tracker.records, candidate.id, candidate.mode)
+  const trackerState: TrackerSaveState = !saved
+    ? 'unsaved'
+    : saved.subject === draft.subject && saved.body === draft.body
+      ? 'saved'
+      : 'changed'
+
+  function saveToTracker() {
+    const result = tracker.saveDraft(candidate, { subject: draft.subject, body: draft.body })
+    toast(result === 'created' ? 'Saved to your tracker' : 'Tracker copy updated')
+  }
 
   const hasSelection = outreach.educationOnly || outreach.selectedExperienceIds.length > 0
   const generateHint = !hasSelection
@@ -80,23 +95,10 @@ export function OutreachPage({ candidate }: { candidate: Candidate }) {
               {candidate.name}
               {candidate.mode === 'demo' && <span className="tag tag--sample">Sample</span>}
             </p>
-            <p className="context__summary">{candidate.researchSummary}</p>
             <div className="match__recruitment">
               <RecruitmentBadge status={candidate.recruitment} />
               <span className="match__recruitment-text">{candidate.recruitmentExplanation}</span>
             </div>
-            <ul className="sources">
-              {candidate.sources.map((source) => (
-                <li key={source.id}>
-                  <SourceLink
-                    source={source}
-                    number={numbers.get(source.id) ?? 0}
-                    opened={state.openedSourceIds.includes(source.id)}
-                    onOpen={(sourceId) => dispatch({ type: 'SOURCE_OPENED', sourceId })}
-                  />
-                </li>
-              ))}
-            </ul>
             <Link to="/matches" className="text-link">
               Back to matches
             </Link>
@@ -136,13 +138,10 @@ export function OutreachPage({ candidate }: { candidate: Candidate }) {
               className="textarea"
               value={outreach.userRequest}
               maxLength={500}
-              aria-describedby="outreach-ask-count"
               placeholder="For example: whether there’s a way to get involved next summer."
               onChange={(event) => dispatch({ type: 'SET_OUTREACH', patch: { userRequest: event.target.value } })}
             />
-            <p id="outreach-ask-count" className="field__count">
-              {outreach.userRequest.length} / 500
-            </p>
+            <CharCount length={outreach.userRequest.length} max={500} />
           </div>
 
           <div className="field">
@@ -191,9 +190,12 @@ export function OutreachPage({ candidate }: { candidate: Candidate }) {
           candidateId={candidate.id}
           canGenerate={!generateHint}
           generateHint={generateHint}
+          trackerState={trackerState}
+          trackerStatus={saved ? STATUS_LABEL[saved.status] : null}
           onGenerate={generate}
           onRegenerate={() => (draft.edited ? setConfirmReplace(true) : void generate())}
           onEdit={(patch) => dispatch({ type: 'EDIT_DRAFT', ...patch })}
+          onSaveToTracker={saveToTracker}
         />
       </div>
 

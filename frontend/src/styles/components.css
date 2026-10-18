@@ -82,8 +82,49 @@
 
 /* ---------- Step navigation ---------- */
 
-.steps {
+.steps-bar {
   margin-top: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-8);
+}
+
+.steps {
+  min-width: 0;
+}
+
+.tracker-link,
+.tracker-link:visited {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tracker-link:hover {
+  color: var(--ink);
+}
+
+.tracker-link.active {
+  color: var(--accent);
+}
+
+.tracker-link__count {
+  min-width: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
 }
 
 .steps__list {
@@ -243,6 +284,14 @@ a.btn-secondary:visited {
   color: var(--accent-hover);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.btn-text--danger {
+  color: var(--error-ink);
+}
+
+.btn-text--danger:hover:not(:disabled) {
+  color: var(--error-ink);
 }
 
 .btn-text:disabled,
@@ -619,6 +668,11 @@ legend.field__label {
   justify-self: end;
 }
 
+.field__count.is-limit {
+  color: var(--warning-ink);
+  font-weight: 600;
+}
+
 .field-error {
   font-size: 14px;
   line-height: 1.5;
@@ -669,6 +723,10 @@ legend.field__label {
 
 .textarea--resume {
   min-height: 200px;
+}
+
+.textarea--notes {
+  min-height: 72px;
 }
 
 .input:hover:not(:disabled),
@@ -765,7 +823,6 @@ legend.field__label {
 
 .check-rows {
   display: grid;
-  border-top: 1px solid var(--rule);
 }
 
 .check-row {
@@ -773,14 +830,8 @@ legend.field__label {
   align-items: flex-start;
   gap: var(--space-3);
   min-height: var(--control-height);
-  padding: var(--space-3) var(--space-1);
-  border-bottom: 1px solid var(--rule);
-  cursor: pointer;
-}
-
-.check-row--plain {
-  border: 0;
   padding: var(--space-2) 0;
+  cursor: pointer;
 }
 
 .check-row input[type='checkbox'] {
@@ -974,8 +1025,6 @@ legend.field__label {
   margin: 0;
   display: grid;
   gap: var(--space-4);
-  border-top: 1px solid var(--rule);
-  padding-top: var(--space-4);
 }
 
 .summary__list dt {
@@ -989,9 +1038,7 @@ legend.field__label {
 }
 
 .filters {
-  margin-top: var(--space-6);
-  border-top: 1px solid var(--rule);
-  padding-top: var(--space-4);
+  margin-top: var(--space-8);
 }
 
 .filters__toggle {
@@ -1019,7 +1066,12 @@ legend.field__label {
   gap: var(--space-2) var(--space-4);
   padding-bottom: var(--space-4);
   border-bottom: 1px solid var(--rule);
-  margin-bottom: var(--space-4);
+}
+
+.results__note {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: var(--ink-secondary);
 }
 
 .results__count {
@@ -1043,14 +1095,14 @@ legend.field__label {
 }
 
 .match {
-  padding: 28px 0;
+  padding: var(--space-6) 0;
   border-bottom: 1px solid var(--rule);
   display: grid;
   gap: var(--space-3);
 }
 
-.match:first-child {
-  padding-top: var(--space-3);
+.match:last-child {
+  border-bottom: 0;
 }
 
 .match--dismissed {
@@ -1091,8 +1143,9 @@ legend.field__label {
 
 .match__label {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  color: var(--ink-secondary);
   margin-bottom: var(--space-1);
 }
 
@@ -1396,9 +1449,7 @@ legend.field__label {
 .context__candidate {
   display: grid;
   gap: var(--space-3);
-  padding-bottom: var(--space-6);
-  margin-bottom: var(--space-6);
-  border-bottom: 1px solid var(--rule);
+  margin-bottom: var(--space-8);
 }
 
 .context__name {
@@ -1420,9 +1471,8 @@ legend.field__label {
 .editor {
   min-width: 0;
   background: var(--surface);
-  border: 1px solid var(--rule);
   border-radius: var(--radius-md);
-  padding: 28px;
+  padding: var(--space-6);
 }
 
 .editor__header {
@@ -1459,10 +1509,122 @@ legend.field__label {
 
 .editor__footer {
   margin-top: var(--space-6);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--rule);
   font-size: 13px;
   color: var(--ink-secondary);
+}
+
+/* ---------- Tracker ---------- */
+
+.tracker-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  max-width: 880px;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tracker-toolbar__summary {
+  color: var(--ink-secondary);
+  padding-bottom: var(--space-2);
+}
+
+.tracker-toolbar__filter {
+  margin-bottom: 0;
+  width: 240px;
+  max-width: 100%;
+}
+
+.tracker-list {
+  list-style: none;
+  max-width: 880px;
+}
+
+.tracker-item {
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.tracker-item__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.tracker-item__who {
+  min-width: 0;
+}
+
+.tracker-item__name {
+  font-size: 23px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.tracker-item__state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.tracker-item__updated {
+  font-size: 13px;
+  color: var(--ink-secondary);
+}
+
+.tracker-item__fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 var(--space-4);
+}
+
+.tracker-item__email {
+  margin-bottom: var(--space-4);
+}
+
+.tracker-item__email summary {
+  width: fit-content;
+  padding: var(--space-3) 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.tracker-item__subject {
+  font-weight: 600;
+  margin: var(--space-2) 0;
+  overflow-wrap: anywhere;
+}
+
+.tracker-item__body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: var(--space-4);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  max-width: var(--measure);
+}
+
+.tracker-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.tracker-item__actions .btn-text--danger {
+  margin-left: auto;
+}
+
+.tracker-footer {
+  max-width: 880px;
 }
 
 /* ---------- Responsive ---------- */
@@ -1528,6 +1690,23 @@ legend.field__label {
     flex: 1 1 0;
   }
 
+  .steps-bar {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .steps {
+    align-self: stretch;
+  }
+
+  .tracker-item__fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tracker-item__name {
+    font-size: 21px;
+  }
+
   .form-grid,
   .preset-chooser {
     grid-template-columns: minmax(0, 1fr);
@@ -1583,6 +1762,16 @@ legend.field__label {
 
   .match__recruitment-text {
     flex-basis: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .brand {
+    font-size: 19px;
+  }
+
+  .site-header__inner {
+    gap: var(--space-2);
   }
 }
 

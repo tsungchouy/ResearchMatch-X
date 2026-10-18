@@ -6,6 +6,8 @@ interface SourceLinkProps {
   number: number
   opened?: boolean
   onOpen?: (sourceId: string) => void
+  /** Spell out that a sample source is not a real page (used once, in the review drawer). */
+  detailed?: boolean
 }
 
 function hostnameOf(url: string): string {
@@ -16,14 +18,14 @@ function hostnameOf(url: string): string {
   }
 }
 
-export function SourceLink({ source, number, opened, onOpen }: SourceLinkProps) {
+export function SourceLink({ source, number, opened, onOpen, detailed }: SourceLinkProps) {
   if (!source.url) {
     return (
       <span className="source">
         <span className="source__title">
           [{number}] {source.title}
         </span>
-        <span className="source__meta">Sample source — not a live university page</span>
+        <span className="source__meta">{detailed ? 'Sample source — not a live university page' : 'Sample source'}</span>
       </span>
     )
   }

@@ -137,6 +137,7 @@ export function EvidenceDrawer({ candidate, experiences, openedSourceIds, onClos
                       number={numbers.get(source.id) ?? 0}
                       opened={openedSourceIds.includes(source.id)}
                       onOpen={onSourceOpen}
+                      detailed
                     />
                     {source.summary && <p className="drawer__source-summary">{source.summary}</p>}
                     <dl className="drawer__dates">

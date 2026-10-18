@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Outlet, useLocation, useNavigate } from 'react-router'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { useApp } from '../state/context'
+import { useTracker } from '../state/trackerContext'
 import { ConfirmDialog } from './ConfirmDialog'
 import { InlineAlert } from './InlineAlert'
 import { StepNavigation } from './StepNavigation'
 
 export function AppShell() {
   const { state, dispatch, resetSession } = useApp()
+  const { records } = useTracker()
   const location = useLocation()
   const navigate = useNavigate()
   const [confirmingReset, setConfirmingReset] = useState(false)
@@ -58,7 +60,18 @@ export function AppShell() {
         </div>
       </header>
       <div className="container">
-        <StepNavigation />
+        <div className="steps-bar">
+          <StepNavigation />
+          <NavLink to="/tracker" className="tracker-link">
+            Outreach tracker
+            {records.length > 0 && (
+              <span className="tracker-link__count">
+                {records.length}
+                <span className="visually-hidden"> saved</span>
+              </span>
+            )}
+          </NavLink>
+        </div>
         <main id="main" className="main">
           {notice && (
             <div className="page-notice">
@@ -93,7 +106,7 @@ export function AppShell() {
         onConfirm={startOver}
         onCancel={() => setConfirmingReset(false)}
       >
-        <p>Your profile, matches and any draft in this session will be cleared. Nothing is saved after you leave.</p>
+        <p>Your profile, matches and any draft in this session will be cleared. Emails you saved to the outreach tracker stay in this browser.</p>
       </ConfirmDialog>
     </div>
   )

@@ -25,7 +25,8 @@ test('complete Demo flow without an API key', async ({ page, context }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Finding relevant research.' })).toBeVisible()
   await expect(page.getByRole('heading', { level: 1, name: 'Research matches' })).toBeVisible({ timeout: 10_000 })
   await expect(page.getByRole('heading', { name: '5 matches' })).toBeVisible()
-  await expect(page.getByText('Sample source — not a live university page').first()).toBeVisible()
+  await expect(page.getByText('Sample data: these people, labs and sources are fictional, not live university pages.')).toBeVisible()
+  await expect(page.getByText('Sample source', { exact: true }).first()).toBeVisible()
   await expect(page.getByText(/%/)).toHaveCount(0)
 
   // Local filters, empty filter state, clear filters.
