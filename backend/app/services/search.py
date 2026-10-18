@@ -124,6 +124,7 @@ def organize_input(profile: Profile, school: School, notes: str, refs: dict) -> 
         f"Student interests: {'; '.join(prefs.interests)}\n"
         f"Student skills: {', '.join(profile.skills) or '(none)'}\n"
         f"Student availability: {availability}; work arrangement preference: {prefs.arrangement}\n"
+        f"Other preferences: <data>{prefs.additional or '(none)'}</data>\n"
         f"Student experiences:\n{experiences}\n\n"
         f"Source list:\n{source_lines}\n\n"
         f"<data>\n{notes[:24000]}\n</data>"
