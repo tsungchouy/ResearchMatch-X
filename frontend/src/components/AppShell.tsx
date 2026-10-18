@@ -1,0 +1,100 @@
+import { useEffect, useRef, useState } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router'
+import { useApp } from '../state/context'
+import { ConfirmDialog } from './ConfirmDialog'
+import { InlineAlert } from './InlineAlert'
+import { StepNavigation } from './StepNavigation'
+
+export function AppShell() {
+  const { state, dispatch, resetSession } = useApp()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [confirmingReset, setConfirmingReset] = useState(false)
+  const routeNotice = (location.state as { notice?: string } | null)?.notice ?? null
+  const notice = routeNotice ?? state.notice
+
+  const hasWork = Boolean(state.profileDraft || state.resume.file || state.resume.text.trim())
+
+  // History state survives reloads, so move redirect notices into app state right away.
+  // Notices belong to the page they were shown on and clear when the path changes.
+  const lastPath = useRef(location.pathname)
+  useEffect(() => {
+    const pathChanged = lastPath.current !== location.pathname
+    lastPath.current = location.pathname
+    if (routeNotice) {
+      dispatch({ type: 'SET_NOTICE', notice: routeNotice })
+      navigate(location.pathname, { replace: true, state: null })
+    } else if (pathChanged) {
+      dispatch({ type: 'SET_NOTICE', notice: null })
+    }
+  }, [routeNotice, location.pathname, navigate, dispatch])
+
+  function startOver() {
+    setConfirmingReset(false)
+    resetSession('live')
+    navigate('/profile', { replace: true })
+  }
+
+  return (
+    <div className="app">
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
+      <header className="site-header">
+        <div className="container site-header__inner">
+          <Link to="/profile" className="brand">
+            ResearchMatch
+          </Link>
+          <div className="site-header__meta">
+            <span className={`mode-tag mode-tag--${state.mode}`}>{state.mode === 'demo' ? 'Demo · Sample data' : 'Live'}</span>
+            <button
+              type="button"
+              className="btn-text"
+              onClick={() => (hasWork ? setConfirmingReset(true) : startOver())}
+            >
+              Start over
+            </button>
+          </div>
+        </div>
+      </header>
+      <div className="container">
+        <StepNavigation />
+        <main id="main" className="main">
+          {notice && (
+            <div className="page-notice">
+              <InlineAlert
+                tone="info"
+                live
+                actions={
+                  <button
+                    type="button"
+                    className="btn-text"
+                    onClick={() => dispatch({ type: 'SET_NOTICE', notice: null })}
+                  >
+                    Dismiss
+                  </button>
+                }
+              >
+                {notice}
+              </InlineAlert>
+            </div>
+          )}
+          <Outlet />
+        </main>
+      </div>
+      <footer className="site-footer">
+        <div className="container">ResearchMatch · Course prototype</div>
+      </footer>
+      <ConfirmDialog
+        open={confirmingReset}
+        title="Start over?"
+        confirmLabel="Start over"
+        cancelLabel="Keep working"
+        onConfirm={startOver}
+        onCancel={() => setConfirmingReset(false)}
+      >
+        <p>Your profile, matches and any draft in this session will be cleared. Nothing is saved after you leave.</p>
+      </ConfirmDialog>
+    </div>
+  )
+}

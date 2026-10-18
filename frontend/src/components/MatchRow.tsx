@@ -1,0 +1,112 @@
+import type { MouseEvent } from 'react'
+import { citationNumbers, FIT_LABEL } from '../lib/format'
+import { schoolName, type Candidate } from '../types/api'
+import { Citations } from './Citations'
+import { RecruitmentBadge } from './RecruitmentBadge'
+import { SourceLink } from './SourceLink'
+
+interface MatchRowProps {
+  candidate: Candidate
+  dismissed: boolean
+  openedSourceIds: string[]
+  onReview: (candidate: Candidate, trigger: HTMLElement) => void
+  onDismiss: (id: string) => void
+  onRestore: (id: string) => void
+  onSourceOpen: (sourceId: string) => void
+}
+
+export function MatchRow({ candidate, dismissed, openedSourceIds, onReview, onDismiss, onRestore, onSourceOpen }: MatchRowProps) {
+  const numbers = citationNumbers(candidate)
+  const headingId = `match-${candidate.id}`
+
+  if (dismissed) {
+    return (
+      <li className="match match--dismissed">
+        <p>
+          <span className="match__dismissed-name">{candidate.name}</span> marked as not relevant.
+        </p>
+        <button type="button" className="btn-text" onClick={() => onRestore(candidate.id)}>
+          Undo
+        </button>
+      </li>
+    )
+  }
+
+  return (
+    <li className="match" aria-labelledby={headingId}>
+      <p className="match__meta">
+        {schoolName(candidate.schoolId)}
+        {candidate.lab && candidate.lab !== candidate.name ? ` · ${candidate.lab}` : ''}
+      </p>
+      <h3 id={headingId} className="match__name">
+        {candidate.name}
+        {candidate.entityType === 'lab' && <span className="tag">Lab</span>}
+        {candidate.mode === 'demo' && <span className="tag tag--sample">Sample</span>}
+      </h3>
+      <p className="match__summary">{candidate.researchSummary}</p>
+
+      <div className="match__block">
+        <h4 className="match__label">
+          Why this may fit <span className="match__fit">· {FIT_LABEL[candidate.fitLevel]}</span>
+        </h4>
+        <ul className="match__reasons">
+          {candidate.fitReasons.slice(0, 2).map((reason) => (
+            <li key={reason.text}>
+              {reason.text}
+              <Citations ids={reason.sourceIds} numbers={numbers} />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="match__recruitment">
+        <RecruitmentBadge status={candidate.recruitment} />
+        <span className="match__recruitment-text">
+          {candidate.recruitmentExplanation}
+          <Citations ids={candidate.recruitmentSourceIds} numbers={numbers} />
+        </span>
+      </div>
+
+      {candidate.unknowns.length > 0 && (
+        <div className="match__block">
+          <h4 className="match__label">Still to confirm</h4>
+          <ul className="match__unknowns">
+            {candidate.unknowns.slice(0, 2).map((unknown) => (
+              <li key={unknown}>{unknown}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="match__block">
+        <h4 className="match__label">Sources</h4>
+        <ul className="sources">
+          {candidate.sources.map((source) => (
+            <li key={source.id}>
+              <SourceLink
+                source={source}
+                number={numbers.get(source.id) ?? 0}
+                opened={openedSourceIds.includes(source.id)}
+                onOpen={onSourceOpen}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="match__actions">
+        <button
+          type="button"
+          className="btn btn-secondary"
+          aria-describedby={headingId}
+          onClick={(event: MouseEvent<HTMLButtonElement>) => onReview(candidate, event.currentTarget)}
+        >
+          Review match
+        </button>
+        <button type="button" className="btn-text" aria-describedby={headingId} onClick={() => onDismiss(candidate.id)}>
+          Not relevant
+        </button>
+      </div>
+    </li>
+  )
+}
