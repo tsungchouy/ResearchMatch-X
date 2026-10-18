@@ -1,23 +1,24 @@
 :root {
-  --canvas: #F7F6F2;
+  color-scheme: light;
+  --canvas: #F5F8FE;
   --surface: #FFFFFF;
-  --surface-subtle: #EFEEE8;
-  --ink: #242823;
-  --ink-secondary: #555C55;
-  --ink-muted: #697068;
-  --rule: #D9DCD3;
-  --control-border: #838B80;
-  --accent: #304D3C;
-  --accent-hover: #22392B;
-  --accent-soft: #E8EEE8;
+  --surface-subtle: #F0F3F9;
+  --ink: #202640;
+  --ink-secondary: #525D74;
+  --ink-muted: #626D83;
+  --rule: #DCE3EF;
+  --control-border: #8795AE;
+  --accent: #365B9B;
+  --accent-hover: #28467D;
+  --accent-soft: #EDF2FC;
   --warning-ink: #755118;
   --warning-soft: #F5EEDC;
   --error-ink: #993B32;
   --error-soft: #F9EDE9;
-  --focus: #456B55;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --font-heading: Georgia, 'Times New Roman', serif;
+  --focus: #365B9B;
+  --radius-sm: 7px;
+  --radius-md: 12px;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Consolas, monospace;
   --space-1: 4px;
@@ -29,8 +30,7 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* Layout decisions derived from the spec */
-  --container: 1160px;
+  --container: 1400px;
   --gutter: 32px;
   --header-height: 72px;
   --control-height: 44px;

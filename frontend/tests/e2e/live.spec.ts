@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { openFirstMatchAndPrepare } from './helpers'
 
 const RESUME =
   'Computer Science junior at Stub University. Research assistant in a campus HCI lab running interview studies. ' +
@@ -10,7 +11,7 @@ test.describe('Live mode without configuration', () => {
     await expect(page.getByText('Live search is not configured. Try the sample workflow.')).toBeVisible()
     await expect(page.getByText('Live', { exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Review extracted profile' })).toBeDisabled()
-    await expect(page.getByText('Reading a resume needs live search.')).toBeVisible()
+    await expect(page.getByText('Resume processing needs a configured AI connection.')).toBeVisible()
     await expect(page.getByText('Sample', { exact: true })).toHaveCount(0)
     await expect(page.getByRole('heading', { name: 'Your profile' })).toHaveCount(0)
   })
@@ -48,20 +49,19 @@ test.describe('Live mode against the local OpenAI stub', () => {
 
     await expect(page.getByRole('heading', { level: 1, name: 'Research matches' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByRole('heading', { name: '1 match' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Stub Professor Avery Lin' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Stub Professor Avery Lin' }).first()).toBeVisible()
     await expect(page.getByText('Sample', { exact: true })).toHaveCount(0)
 
-    const link = page.getByRole('link', { name: /Stub Professor Avery Lin — faculty page/ }).first()
+    const inspector = page.getByRole('region', { name: 'Review match' })
+    await inspector.getByRole('tab', { name: /Sources/ }).click()
+    const link = inspector.getByRole('link', { name: /Stub Professor Avery Lin — faculty page/ }).first()
     await expect(link).toHaveAttribute('href', 'https://www.cs.cmu.edu/~stub-lin')
     await expect(link).toHaveAttribute('target', '_blank')
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     await expect(page.getByText(/example\.com/)).toHaveCount(0)
     await expect(page.locator('.badge').first()).toHaveText('Recruiting stated')
 
-    await page.getByRole('button', { name: 'Review match' }).click()
-    const drawer = page.getByRole('dialog')
-    await drawer.getByLabel('I reviewed the match and understand that availability may be unconfirmed.').check()
-    await drawer.getByRole('button', { name: 'Prepare outreach' }).click()
+    await openFirstMatchAndPrepare(page)
 
     await page.getByLabel('Research assistant, campus HCI lab').check()
     await page.getByLabel('Use only the details I selected above.').check()

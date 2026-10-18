@@ -79,6 +79,8 @@ export function PreferencesForm({ preferences, onChange, errors }: PreferencesFo
         )}
       </fieldset>
 
+      <details className="disclosure preferences__more" open={Boolean(preferences.startMonth || preferences.endMonth || preferences.additional || errors.endMonth) || preferences.arrangement !== 'any'}>
+      <summary>Availability &amp; more</summary>
       <fieldset className="fieldset">
         <legend className="field__label">Availability</legend>
         <div className="form-grid">
@@ -158,6 +160,7 @@ export function PreferencesForm({ preferences, onChange, errors }: PreferencesFo
         />
         <CharCount length={preferences.additional.length} max={500} />
       </div>
+      </details>
     </section>
   )
 }

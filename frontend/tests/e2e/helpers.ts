@@ -21,8 +21,9 @@ export async function startDemoSearch(page: Page, preset = /HCI sample/) {
 
 export async function openFirstMatchAndPrepare(page: Page) {
   await page.getByRole('button', { name: 'Review match' }).first().click()
-  const drawer = page.getByRole('dialog')
-  await drawer.getByLabel('I reviewed the match and understand that availability may be unconfirmed.').check()
+  const drawer = await page.getByRole('dialog').isVisible() ? page.getByRole('dialog') : page.getByRole('region', { name: 'Review match' })
   await drawer.getByRole('button', { name: 'Prepare outreach' }).click()
+  await drawer.getByLabel('I reviewed the match and understand that availability may be unconfirmed.').check()
+  await drawer.getByRole('button', { name: 'Continue to draft' }).click()
   await expect(page).toHaveURL(/\/outreach$/)
 }

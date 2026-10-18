@@ -1,52 +1,32 @@
-import { useLocation, useNavigate } from 'react-router'
+import { Compass, Mail, UserRound } from 'lucide-react'
+import { Link, useLocation } from 'react-router'
 import { useApp } from '../state/context'
 
-interface Step {
-  path: string
-  label: string
-  unlocked: boolean
-}
-
 export function StepNavigation() {
-  const { state } = useApp()
-  const location = useLocation()
-  const navigate = useNavigate()
-
-  const steps: Step[] = [
-    { path: '/profile', label: 'Profile', unlocked: true },
-    {
-      path: '/matches',
-      label: 'Matches',
-      unlocked: Boolean(state.confirmedProfile && state.search),
-    },
-    {
-      path: '/outreach',
-      label: 'Outreach',
-      unlocked: Boolean(state.selection),
-    },
+  const { state, dispatch } = useApp()
+  const { pathname } = useLocation()
+  const steps = [
+    { path: '/profile', label: 'Profile', icon: UserRound, unlocked: true, hint: '' },
+    { path: '/matches', label: 'Matches', icon: Compass, unlocked: Boolean(state.confirmedProfile && state.search), hint: 'Review your profile and start a search to see matches.' },
+    { path: '/outreach', label: 'Outreach', icon: Mail, unlocked: Boolean(state.selection), hint: 'Review a match before preparing outreach.' },
   ]
 
   return (
     <nav className="steps" aria-label="Progress">
       <ol className="steps__list">
-        {steps.map((step) => {
-          const current = location.pathname === step.path
-          return (
-            <li key={step.path} className="steps__item">
-              <button
-                type="button"
-                className={`steps__button${current ? ' is-current' : ''}`}
-                aria-current={current ? 'step' : undefined}
-                aria-disabled={!step.unlocked || undefined}
-                onClick={() => {
-                  if (step.unlocked && !current) navigate(step.path)
-                }}
-              >
-                {step.label}
+        {steps.map(({ path, label, icon: Icon, unlocked, hint }) => (
+          <li key={path} className="steps__item">
+            {unlocked ? (
+              <Link to={path} className={`steps__button${pathname === path ? ' is-current' : ''}`} aria-current={pathname === path ? 'page' : undefined}>
+                <Icon size={18} aria-hidden="true" />{label}
+              </Link>
+            ) : (
+              <button type="button" className="steps__button" aria-disabled="true" onClick={() => dispatch({ type: 'SET_NOTICE', notice: hint })}>
+                <Icon size={18} aria-hidden="true" />{label}
               </button>
-            </li>
-          )
-        })}
+            )}
+          </li>
+        ))}
       </ol>
     </nav>
   )
