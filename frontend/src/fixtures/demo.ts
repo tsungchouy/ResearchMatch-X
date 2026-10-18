@@ -75,7 +75,7 @@ const PROFILES: Record<PresetId, Omit<Profile, 'id' | 'version' | 'confirmed'>> 
     },
   },
   robotics: {
-    name: null,
+    name: 'Casey Sample',
     institution: 'Sample State University',
     degreeYear: 'BS, senior',
     major: 'Mechanical Engineering',

@@ -6,6 +6,10 @@ export type FieldErrors = Record<string, string>
 export function validateProfile(profile: Profile): { errors: FieldErrors; order: string[] } {
   const errors: FieldErrors = {}
   const order: string[] = []
+  if (!profile.name?.trim()) {
+    errors.name = 'Add your name.'
+    order.push('profile-name')
+  }
   for (const exp of profile.experiences) {
     if (!exp.title.trim()) {
       errors[`exp-${exp.id}-title`] = 'Add a short title, or remove this experience.'

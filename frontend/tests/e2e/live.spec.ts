@@ -39,6 +39,13 @@ test.describe('Live mode against the local OpenAI stub', () => {
     await page.getByLabel('I have reviewed my background and preferences.').check()
     await page.getByRole('button', { name: 'Find research matches' }).click()
 
+    // The resume had no name, so confirming is blocked until one is entered.
+    await expect(page.getByText('Add your name.')).toBeVisible()
+    await expect(page.getByLabel('Name')).toBeFocused()
+    await page.getByLabel('Name').fill('Riley Stub')
+    await page.getByLabel('I have reviewed my background and preferences.').check()
+    await page.getByRole('button', { name: 'Find research matches' }).click()
+
     await expect(page.getByRole('heading', { level: 1, name: 'Research matches' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByRole('heading', { name: '1 match' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Stub Professor Avery Lin' })).toBeVisible()
@@ -68,6 +75,7 @@ test.describe('Live mode against the local OpenAI stub', () => {
     await page.getByRole('tab', { name: 'Paste text' }).click()
     await page.getByPlaceholder('Paste your resume or a short summary of your background.').fill(RESUME)
     await page.getByRole('button', { name: 'Review extracted profile' }).click()
+    await page.getByLabel('Name').fill('Riley Stub')
     await page.getByLabel('Research interests').fill('Machine learning')
     await page.getByLabel('Research interests').press('Enter')
     await page.getByLabel(/Stanford University/).check()

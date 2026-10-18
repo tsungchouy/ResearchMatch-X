@@ -55,6 +55,9 @@ class ConfirmProfileRequest(Profile):
 
     @model_validator(mode="after")
     def _validate_for_search(self) -> "ConfirmProfileRequest":
+        self.name = (self.name or "").strip()
+        if not self.name:
+            raise ValueError("Add your name.")
         prefs = self.preferences
         interests = [term.strip() for term in prefs.interests]
         if not 1 <= len(interests) <= 5:

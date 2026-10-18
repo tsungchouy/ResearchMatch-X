@@ -23,32 +23,38 @@ function TextField({
   label,
   value,
   onChange,
-  hint,
+  maxLength = 200,
+  required,
+  error,
 }: {
   id: string
   label: string
   value: string | null
   onChange: (value: string | null) => void
-  hint?: string
+  maxLength?: number
+  required?: boolean
+  error?: string
 }) {
   return (
     <div className="field">
       <label className="field__label" htmlFor={id}>
         {label}
       </label>
-      {hint && (
-        <p className="field__hint" id={`${id}-hint`}>
-          {hint}
-        </p>
-      )}
       <input
         id={id}
-        className="input"
+        className={`input${error ? ' has-error' : ''}`}
         value={value ?? ''}
-        maxLength={200}
-        aria-describedby={hint ? `${id}-hint` : undefined}
+        maxLength={maxLength}
+        aria-required={required || undefined}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
         onChange={(event) => onChange(event.target.value === '' ? null : event.target.value)}
       />
+      {error && (
+        <p id={`${id}-error`} className="field-error">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
@@ -73,7 +79,15 @@ export const ProfileEditor = forwardRef<HTMLHeadingElement, ProfileEditorProps>(
       <p className="section__lead">Check these details. You can edit anything before searching.</p>
 
       <div className="form-grid">
-        <TextField id="profile-name" label="Name" hint="Optional" value={profile.name} onChange={(name) => update({ name })} />
+        <TextField
+          id="profile-name"
+          label="Name"
+          value={profile.name}
+          maxLength={120}
+          required
+          error={errors.name}
+          onChange={(name) => update({ name })}
+        />
         <TextField
           id="profile-institution"
           label="School"

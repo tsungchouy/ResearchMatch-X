@@ -93,7 +93,12 @@ def test_confirm_validation_and_versions(client):
     no_interest = client.post("/api/profile/confirm", json=profile, headers=headers)
     assert no_interest.status_code == 422
     assert "research interest" in no_interest.json()["error"]["message"]
-    profile["preferences"].update(interests=["HCI"], startMonth="2027-06", endMonth="2027-01")
+    profile["preferences"]["interests"] = ["HCI"]
+    for blank in (None, "   "):
+        no_name = client.post("/api/profile/confirm", json={**profile, "name": blank}, headers=headers)
+        assert no_name.status_code == 422
+        assert no_name.json()["error"]["message"] == "Add your name."
+    profile["preferences"].update(startMonth="2027-06", endMonth="2027-01")
     bad_dates = client.post("/api/profile/confirm", json=profile, headers=headers)
     assert "end month" in bad_dates.json()["error"]["message"]
     profile["preferences"]["endMonth"] = "2027-08"

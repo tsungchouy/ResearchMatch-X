@@ -51,6 +51,8 @@ test('mobile drawer is full screen with a reachable close button, and the email 
 
   await openFirstMatchAndPrepare(page)
   await page.getByLabel('Robotics team, perception lead').check()
+  await expect(page.getByLabel('Signature name')).toHaveValue('Casey Sample')
+  await page.getByLabel('Signature name').fill('')
   await page.getByLabel('Use only the details I selected above.').check()
   await page.getByRole('button', { name: 'Generate draft' }).click()
   const body = page.getByLabel('Body')
