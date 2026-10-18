@@ -11,6 +11,14 @@ Two modes, always labeled in the header:
 
 The app never sends email or guesses professor addresses. The current workflow is saved in this browser so refreshes keep the profile, matches, selections and draft. Uploaded PDF bytes are not saved; pasted text is stored locally with the workflow. The backend keeps session data only in memory.
 
+## Light blue workspace
+
+The frontend uses a light blue canvas, white content surfaces and dark text, including when the operating system uses dark mode. On desktop, compact matches sit beside a persistent evidence inspector; smaller screens use a full-width review dialog. Citations open the corresponding source summary, while the Overview and Sources tabs separate the decision summary from supporting detail.
+
+Preparing outreach opens an explicit review step before continuing to the draft. Profile experience editors, optional preferences and evidence explanations expand on request. Existing Live/Demo adapters, source validation, draft protection and browser storage remain in place.
+
+See [design rationale and scope](docs/frontend-redesign.md) and [AI-assisted implementation briefs](docs/frontend-prompts.md). No external application code or design assets were copied for this refresh.
+
 ## Repository layout
 
 ```
@@ -24,7 +32,7 @@ frontend/           React + TypeScript + Vite (plain CSS tokens, no UI framework
 
 ## Requirements
 
-Tested with **Node v25.9.0 / npm 11.12.1** and **Python 3.14.4** on macOS. Node ≥ 20 and Python ≥ 3.11 should work but were not tested. Scanned PDFs use Tesseract when it is installed (recommended for English resumes), with bundled RapidOCR models as a fallback.
+This frontend refresh was verified with **Node 24.19.0** and **Python 3.12.14** on macOS. The current React Router dependency requires **Node ≥ 22.22.0**; use Node 24 LTS. Backend requirements specify Python ≥ 3.11. Scanned PDFs use Tesseract when it is installed (recommended for English resumes), with bundled RapidOCR models as a fallback.
 
 ## Install from a clean directory
 
@@ -84,9 +92,9 @@ Frontend: `API_PROXY_TARGET` (dev server only) proxies `/api` somewhere other th
 
 1. On the Profile page choose **Try a sample profile**, then one of the HCI, Machine learning or Robotics samples.
 2. Edit anything, tick "I have reviewed my background and preferences.", then **Find research matches**.
-3. Filter matches, open **Review match** to read the reasons, recruitment evidence and sources, tick the review checkbox and choose **Prepare outreach**.
+3. Filter matches, choose **Review match** to inspect the reasons and sources, then **Prepare outreach**. Tick the review checkbox and choose **Continue to draft**.
 4. Pick which experiences the email may use, confirm, **Generate draft**, edit, then **Copy email** or **Download .txt**.
-5. Optionally choose **Save to tracker**, then open **Outreach tracker** (next to the steps) to record status, dates and notes.
+5. Optionally choose **Save to tracker**, then open **Tracker** in the navigation to record status, dates and notes.
 
 ## Outreach tracker
 
@@ -121,6 +129,8 @@ npm run build          # includes tsc type checking
 npm test               # vitest reducer tests
 npx playwright install chromium   # first time only
 npm run test:e2e       # Playwright
+# Or use an installed Google Chrome:
+PLAYWRIGHT_CHROMIUM_CHANNEL=chrome npm run test:e2e
 ```
 
 `npm run test:e2e` starts everything it needs: a backend with **no** key on :8000 with Vite on :5173, and a second backend on :8001 whose OpenAI SDK points at a local stub (`backend/tests/stub_openai_server.py`, :8765) with Vite on :5174. The e2e config expects the backend virtualenv at `backend/.venv`. If servers are already running on those ports they are reused outside CI.
@@ -134,12 +144,14 @@ The spec suggested `tests/e2e/` at the repo root; the specs live in `frontend/te
 | Backend pytest | 28 passed (URL domain rules, sources must exist, missing recruitment evidence → unknown, session isolation, profile version mismatch rejects drafts, idempotent job creation, partial/failed/cancel/retry, PDF validation and OCR fallback, OpenAI gateway request/response shape via a mock transport) |
 | Frontend lint (oxlint) | clean |
 | TypeScript + Vite build | clean |
-| Vitest | 22 passed (invalidation chain, late responses ignored, mode switch reset, draft edit protection; tracker save/update rules, follow-up logic, storage parsing that skips invalid or unsafe entries, CSV escaping) |
-| Playwright | 16 passed (full Demo flow without a key; Live-not-configured message; mobile upload input, drawer and email editing at 390×844; clipboard failure; partial failure + retry via test adapter; draft failure keeps input; cancel; validation focus; route guards and refresh; Live wiring against the OpenAI stub including partial failure; tracker save → status → reload → CSV → remove; Start over keeps the tracker; tracker at 360 px) |
+| Vitest | 25 passed (invalidation chain, late responses ignored, mode switch reset, draft edit protection; tracker save/update rules, follow-up logic, storage parsing that skips invalid or unsafe entries, CSV escaping) |
+| Playwright | 17 passed (full Demo flow without a key; Live-not-configured message; mobile upload input, drawer and email editing at 390×844; clipboard failure; partial failure + retry via test adapter; draft failure keeps input; cancel; validation focus; route guards and refresh; Live wiring against the OpenAI stub including partial failure; tracker save → status → reload → CSV → remove; Start over keeps the tracker; tracker at 360 px; forced light appearance with a dark OS preference, citation navigation, review confirmation and 320 px reflow) |
 
-Layouts were also checked by screenshot at 1440×900, 1024×768, 390×844, 360×800 and 320 px (no horizontal scroll), and a runtime contrast scan of the matches, outreach and tracker pages found no enabled text below 4.5:1.
+The refreshed matches, profile and outreach pages were visually checked at 1440 px; mobile evidence review was checked at 390×844, and the automated suite checks horizontal overflow at 320 px. See [desktop and mobile screenshots](docs/frontend-redesign.md#screenshots).
 
-## Verification status (honest)
+## Baseline Live verification
+
+The following real-provider checks were recorded by the existing project before this frontend refresh. This refresh reverified Live wiring against the local OpenAI stub; it did not repeat real-provider accuracy checks.
 
 - **Verified: text and scanned PDF extraction with `gpt-5-mini`.** On 2026-10-18 a real one-page resume was parsed locally and sent through the OpenAI Responses API. The structured profile preserved its education, majors/minor, six named experiences and quantitative achievements. A generated image-only PDF also passed local OCR.
 - **Verified: real `web_search` and complete Live flow.** A CMU-only smoke test returned three sourced matches, including Haiyi Zhu, BIG Lab and CARE Lab, and generated an editable outreach draft. The cited CMU pages were opened manually and supported the displayed research-fit claims. Recruiting remained `unknown` because no cited page clearly stated a current undergraduate opening.

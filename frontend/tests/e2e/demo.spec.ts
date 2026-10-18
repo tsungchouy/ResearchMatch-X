@@ -41,16 +41,19 @@ test('complete Demo flow without an API key', async ({ page, context }) => {
   await expect(page.getByText(/marked as not relevant/)).toBeVisible()
   await page.getByRole('button', { name: 'Undo' }).click()
 
-  // Drawer: escape closes and returns focus; checkbox gates outreach.
+  // Desktop inspector: citations locate evidence and human review gates drafting.
   const review = page.getByRole('button', { name: 'Review match' }).first()
   await review.click()
-  const drawer = page.getByRole('dialog')
+  const drawer = page.getByRole('region', { name: 'Review match' })
   await expect(drawer.getByRole('heading', { name: 'Recruitment status' })).toBeVisible()
+  await drawer.getByRole('button', { name: 'View source 1', exact: true }).first().click()
+  await expect(drawer.getByRole('tab', { name: /Sources/ })).toHaveAttribute('aria-selected', 'true')
+  await expect(drawer.locator('.drawer__source.is-active')).toBeFocused()
   await expect(drawer.getByText(/Sample source/).first()).toBeVisible()
-  await expect(drawer.getByRole('button', { name: 'Prepare outreach' })).toBeDisabled()
-  await page.keyboard.press('Escape')
-  await expect(drawer).toBeHidden()
-  await expect(review).toBeFocused()
+  await drawer.getByRole('tab', { name: 'Overview' }).click()
+  await drawer.getByRole('button', { name: 'Prepare outreach' }).click()
+  await expect(drawer.getByRole('button', { name: 'Continue to draft' })).toBeDisabled()
+  await drawer.getByRole('button', { name: 'Back', exact: true }).click()
   await openFirstMatchAndPrepare(page)
 
   // Outreach: nothing pre-selected, gate before generating.

@@ -1,8 +1,10 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { usePageHeading } from '../app/usePageHeading'
+import { useWideWorkspace } from '../app/useWideWorkspace'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EvidenceDrawer } from '../components/EvidenceDrawer'
+import { EvidenceReview } from '../components/EvidenceReview'
 import { InlineAlert } from '../components/InlineAlert'
 import { MatchRow } from '../components/MatchRow'
 import { joinList, RECRUITMENT_LABEL } from '../lib/format'
@@ -26,6 +28,8 @@ export function MatchesPage() {
 
   const title = showProgress || (search.error && !displayed) ? 'Finding relevant research.' : 'Research matches'
   const headingRef = usePageHeading(title)
+  const wide = useWideWorkspace()
+  const [inspectedId, setInspectedId] = useState<string | null>(null)
 
   const [reviewing, setReviewing] = useState<Candidate | null>(null)
   const trigger = useRef<HTMLElement | null>(null)
@@ -53,6 +57,8 @@ export function MatchesPage() {
 
   const failedSchools = (displayed?.schools ?? []).filter((school) => school.status === 'failed')
   const filtersActive = state.filters.school !== 'all' || state.filters.recruitment !== 'all'
+  const inspected = filtered.find((candidate) => candidate.id === inspectedId && !state.dismissedIds.includes(candidate.id))
+    ?? filtered.find((candidate) => !state.dismissedIds.includes(candidate.id))
 
   function closeDrawer() {
     setReviewing(null)
@@ -122,6 +128,7 @@ export function MatchesPage() {
       <h1 ref={headingRef} tabIndex={-1} className="page-title">
         {title}
       </h1>
+      {!showProgress && <p className="page-subtitle">{profile.preferences.interests.join(' · ')}</p>}
     </header>
   )
 
@@ -233,7 +240,7 @@ export function MatchesPage() {
       {header}
       <div className="matches-layout">
         <aside className="summary" aria-label="Search summary and filters">
-          <Link to="/profile" className="text-link">
+          <Link to="/profile" className="text-link edit-profile-link">
             Edit profile
           </Link>
 
@@ -380,21 +387,27 @@ export function MatchesPage() {
               </button>
             </div>
           ) : (
-            <ol className="match-list">
+            <div className="results__body">
+            <ol className="match-list" aria-label="Research matches">
               {filtered.map((candidate) => (
                 <MatchRow
                   key={candidate.id}
                   candidate={candidate}
                   dismissed={state.dismissedIds.includes(candidate.id)}
+                  selected={wide && inspected?.id === candidate.id}
                   onReview={(cand, element) => {
                     trigger.current = element
-                    setReviewing(cand)
+                    setInspectedId(cand.id)
+                    if (wide) requestAnimationFrame(() => document.getElementById('evidence-title')?.focus())
+                    else setReviewing(cand)
                   }}
                   onDismiss={(id) => dispatch({ type: 'DISMISS_CANDIDATE', candidateId: id })}
                   onRestore={(id) => dispatch({ type: 'RESTORE_CANDIDATE', candidateId: id })}
                 />
               ))}
             </ol>
+            {wide && inspected && <section className="evidence-panel" aria-label="Review match"><EvidenceReview key={inspected.id} candidate={inspected} headingId="evidence-title" experiences={profile.experiences} openedSourceIds={state.openedSourceIds} onPrepare={prepare} onSourceOpen={(sourceId) => dispatch({ type: 'SOURCE_OPENED', sourceId })} /></section>}
+            </div>
           )}
           {displayed && displayed.warnings.length > 0 && (
             <p className="results__warnings">{displayed.warnings.join(' ')}</p>
@@ -402,14 +415,14 @@ export function MatchesPage() {
         </section>
       </div>
 
-      <EvidenceDrawer
+      {!wide && <EvidenceDrawer
         candidate={reviewing}
         experiences={profile.experiences}
         openedSourceIds={state.openedSourceIds}
         onClose={closeDrawer}
         onPrepare={prepare}
         onSourceOpen={(sourceId) => dispatch({ type: 'SOURCE_OPENED', sourceId })}
-      />
+      />}
       <ConfirmDialog
         open={Boolean(pendingCandidate)}
         title="Replace your edited draft?"

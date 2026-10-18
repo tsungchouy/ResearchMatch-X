@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Inbox, Orbit } from 'lucide-react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { useApp } from '../state/context'
 import { useTracker } from '../state/trackerContext'
@@ -45,6 +46,7 @@ export function AppShell() {
       <header className="site-header">
         <div className="container site-header__inner">
           <Link to="/profile" className="brand">
+            <span className="brand__mark"><Orbit size={20} aria-hidden="true" /></span>
             ResearchMatch
           </Link>
           <div className="site-header__meta">
@@ -59,10 +61,11 @@ export function AppShell() {
           </div>
         </div>
       </header>
-      <div className="container">
-        <div className="steps-bar">
+      <div className="container workspace">
+        <aside className="workspace__navigation" aria-label="Workspace navigation">
           <StepNavigation />
           <NavLink to="/tracker" className="tracker-link">
+            <Inbox size={18} aria-hidden="true" />
             Tracker
             {records.length > 0 && (
               <span className="tracker-link__count">
@@ -71,7 +74,7 @@ export function AppShell() {
               </span>
             )}
           </NavLink>
-        </div>
+        </aside>
         <main id="main" className="main">
           {notice && (
             <div className="page-notice">

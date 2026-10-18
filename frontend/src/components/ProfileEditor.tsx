@@ -133,6 +133,9 @@ export const ProfileEditor = forwardRef<HTMLHeadingElement, ProfileEditorProps>(
                     Remove
                   </button>
                 </div>
+                <p className="experience__title">{exp.title || 'New experience'}</p>
+                <details className="disclosure" open={!exp.title || Boolean(titleError)}>
+                <summary>Edit experience</summary>
                 <div className="field">
                   <label className="field__label" htmlFor={titleId}>
                     Title
@@ -165,6 +168,7 @@ export const ProfileEditor = forwardRef<HTMLHeadingElement, ProfileEditorProps>(
                   />
                   <CharCount length={exp.description.length} max={500} />
                 </div>
+                </details>
               </li>
             )
           })}

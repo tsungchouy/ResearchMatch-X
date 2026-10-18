@@ -26,7 +26,7 @@ h3,
 h4 {
   margin: 0;
   font-family: var(--font-heading);
-  font-weight: 400;
+  font-weight: 500;
   color: var(--ink);
 }
 
@@ -60,7 +60,7 @@ a:hover {
 }
 
 a:visited {
-  color: #3E4A44;
+  color: var(--accent);
 }
 
 :focus-visible {

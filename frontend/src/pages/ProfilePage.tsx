@@ -200,7 +200,7 @@ export function ProfilePage() {
                 }
               >
                 <p>No resume or live search is used.</p>
-                {presetChooser}
+                <details className="disclosure"><summary>Change sample profile</summary>{presetChooser}</details>
               </InlineAlert>
             ) : (
               <ResumeInput
@@ -225,7 +225,7 @@ export function ProfilePage() {
                 </button>
                 {liveUnavailable && (
                   <p id="extract-hint" className="field__hint">
-                    Reading a resume needs live search.
+                    Resume processing needs a configured AI connection.
                   </p>
                 )}
                 {!liveUnavailable && !showPresets && (
@@ -243,6 +243,7 @@ export function ProfilePage() {
 
           {state.profileDraft && (
             <>
+              <div className="profile-review-grid">
               <ProfileEditor
                 ref={profileHeadingRef}
                 profile={state.profileDraft}
@@ -256,6 +257,7 @@ export function ProfilePage() {
                   state.profileDraft && dispatch({ type: 'EDIT_PROFILE', profile: { ...state.profileDraft, preferences } })
                 }
               />
+              </div>
               <section className="section section--ruled confirm-section" aria-label="Confirm and search">
                 {state.confirmedProfile && state.profileDirty && (
                   <InlineAlert
