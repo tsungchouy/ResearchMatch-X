@@ -28,8 +28,9 @@ SCHOOLS: dict[str, School] = {
 class Settings:
     openai_api_key: str = ""
     openai_model: str = ""
+    openai_reasoning_effort: str | None = None
     openai_base_url: str | None = None
-    request_timeout_s: float = 90.0
+    request_timeout_s: float = 180.0
     session_ttl_s: float = 30 * 60
     cors_origins: list[str] = field(default_factory=list)
     max_candidates_per_school: int = 3
@@ -49,7 +50,8 @@ def get_settings() -> Settings:
     return Settings(
         openai_api_key=os.getenv("OPENAI_API_KEY", "").strip(),
         openai_model=os.getenv("OPENAI_MODEL", "").strip(),
+        openai_reasoning_effort=os.getenv("OPENAI_REASONING_EFFORT", "").strip() or None,
         openai_base_url=os.getenv("OPENAI_BASE_URL", "").strip() or None,
-        request_timeout_s=float(os.getenv("OPENAI_TIMEOUT_SECONDS", "90")),
+        request_timeout_s=float(os.getenv("OPENAI_TIMEOUT_SECONDS", "180")),
         cors_origins=_split(os.getenv("CORS_ORIGINS", "")),
     )

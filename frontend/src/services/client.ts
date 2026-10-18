@@ -45,7 +45,7 @@ function randomHex(bytes: number): string {
   return Array.from(values, (value) => value.toString(16).padStart(2, '0')).join('')
 }
 
-/** 128-bit random session identifier, kept in memory only. */
+/** 128-bit random session identifier, stored locally with the active workflow. */
 export function createSessionId(): string {
   return randomHex(16)
 }

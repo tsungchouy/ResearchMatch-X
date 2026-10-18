@@ -9,7 +9,7 @@ Two modes, always labeled in the header:
 - **Demo · Sample data** — works with no API key. Uses clearly fictional people, labs and sources (every source says "Sample source — not a live university page"). No resume is analyzed and no live search runs.
 - **Live** — the backend calls the OpenAI Responses API with the built-in `web_search` tool, restricted to one university domain per search (CMU `cmu.edu`, Stanford `stanford.edu`, UW `washington.edu`). If Live is not configured or fails, the UI says so; it never falls back to sample data silently.
 
-The app never sends email, guesses professor addresses, or stores resumes beyond the in-memory session. The only thing kept after you leave is what you explicitly save to the outreach tracker (see below).
+The app never sends email or guesses professor addresses. The current workflow is saved in this browser so refreshes keep the profile, matches, selections and draft. Uploaded PDF bytes are not saved; pasted text is stored locally with the workflow. The backend keeps session data only in memory.
 
 ## Repository layout
 
@@ -24,7 +24,7 @@ frontend/           React + TypeScript + Vite (plain CSS tokens, no UI framework
 
 ## Requirements
 
-Tested with **Node v25.9.0 / npm 11.12.1** and **Python 3.14.4** on macOS. Node ≥ 20 and Python ≥ 3.11 should work but were not tested.
+Tested with **Node v25.9.0 / npm 11.12.1** and **Python 3.14.4** on macOS. Node ≥ 20 and Python ≥ 3.11 should work but were not tested. Scanned PDFs use Tesseract when it is installed (recommended for English resumes), with bundled RapidOCR models as a fallback.
 
 ## Install from a clean directory
 
@@ -71,7 +71,8 @@ Open <http://localhost:5173>.
 | --- | --- | --- |
 | `OPENAI_API_KEY` | Live only | Server-side key. Never sent to the browser. |
 | `OPENAI_MODEL` | Live only | A model your account can use **with the `web_search` tool**. |
-| `OPENAI_TIMEOUT_SECONDS` | no | Per-request timeout, default `90`. The SDK retries at most once. |
+| `OPENAI_REASONING_EFFORT` | no | Reasoning effort for supported models; `low` saves latency and tokens. |
+| `OPENAI_TIMEOUT_SECONDS` | no | Per-request timeout, default `180`. Provider calls are not retried implicitly. |
 | `OPENAI_BASE_URL` | no | Alternative API base URL (used by the tests to point at a local stub). |
 | `CORS_ORIGINS` | no | Comma-separated origins, only needed if the frontend is served from another origin. |
 
@@ -96,10 +97,12 @@ Frontend: `API_PROXY_TARGET` (dev server only) proxies `/api` somewhere other th
 - Records are stored **only in this browser's localStorage** (`researchmatch.tracker.v1`), including the email text. Nothing is sent to the backend. **Start over** does not clear them; use **Remove** or **Clear tracker**. **Download CSV** exports the list (cells starting with `=`, `+`, `-` or `@` are escaped so spreadsheets don't run them).
 - If the browser refuses to store data (some private modes), the page says changes aren't being saved.
 
+The active workflow is stored separately in localStorage (`researchmatch.session.v1`). **Start over** clears it. Uploaded PDF files must be selected again if the page is refreshed before extraction.
+
 ## Testing Live
 
 1. Put a real key and a web-search-capable model in `backend/.env`, restart uvicorn and check `curl localhost:8000/api/health` shows `"liveConfigured":true`.
-2. In the app, upload a text-based PDF resume (≤ 5 MB, ≤ 10 pages) or paste ≥ 100 characters of background.
+2. In the app, upload a text-based or scanned PDF resume (≤ 5 MB, ≤ 10 pages) or paste ≥ 100 characters of background.
 3. Review the extracted profile (the name field is never sent to search), add interests, confirm and search.
 4. For each match, open the source links and check by hand that the person, university and recruitment statement are really on the page.
 5. Generate and edit a draft.
@@ -128,7 +131,7 @@ The spec suggested `tests/e2e/` at the repo root; the specs live in `frontend/te
 
 | Suite | Result |
 | --- | --- |
-| Backend pytest | 27 passed (URL domain rules, sources must exist, missing recruitment evidence → unknown, session isolation, profile version mismatch rejects drafts, idempotent job creation, partial/failed/cancel/retry, PDF validation, OpenAI gateway request/response shape via a mock transport) |
+| Backend pytest | 28 passed (URL domain rules, sources must exist, missing recruitment evidence → unknown, session isolation, profile version mismatch rejects drafts, idempotent job creation, partial/failed/cancel/retry, PDF validation and OCR fallback, OpenAI gateway request/response shape via a mock transport) |
 | Frontend lint (oxlint) | clean |
 | TypeScript + Vite build | clean |
 | Vitest | 22 passed (invalidation chain, late responses ignored, mode switch reset, draft edit protection; tracker save/update rules, follow-up logic, storage parsing that skips invalid or unsafe entries, CSV escaping) |
@@ -138,13 +141,13 @@ Layouts were also checked by screenshot at 1440×900, 1024×768, 390×844, 360×
 
 ## Verification status (honest)
 
-- **Not verified: Live mode against the real OpenAI API.** No API key was available while building this, so the real `web_search` behavior, the chosen model, the quality of matches, costs and real latency are untested. The Live code path *is* exercised end to end through the real OpenAI Python SDK against a local stub that returns Responses-shaped JSON, which verifies request/response wiring but not model behavior.
-- Because of that, these acceptance items are still open: "Live results have real web_search calls and citations" and the manual Live check (one fresh resume through real search to email, sources opened and checked by hand).
-- `OPENAI_MODEL` has no default on purpose; pick one after a real smoke test.
+- **Verified: text and scanned PDF extraction with `gpt-5-mini`.** On 2026-10-18 a real one-page resume was parsed locally and sent through the OpenAI Responses API. The structured profile preserved its education, majors/minor, six named experiences and quantitative achievements. A generated image-only PDF also passed local OCR.
+- **Verified: real `web_search` and complete Live flow.** A CMU-only smoke test returned three sourced matches, including Haiyi Zhu, BIG Lab and CARE Lab, and generated an editable outreach draft. The cited CMU pages were opened manually and supported the displayed research-fit claims. Recruiting remained `unknown` because no cited page clearly stated a current undergraduate opening.
+- `OPENAI_MODEL` has no repository default; configure a model after checking current availability and pricing.
 
 ## Limitations
 
-- **Single process, in-memory store.** Sessions, confirmed profiles, search jobs and drafts live in memory for 30 minutes. Run one uvicorn worker; restarting the server or refreshing the page loses the session (the app says so after a refresh). Only tracker records survive, and only in the same browser.
+- **Single-process backend.** Provider-side session records live in memory for 30 minutes, so run one uvicorn worker. Browser state survives refreshes and keeps completed results and drafts, but after a backend restart a new provider action may require starting a new session.
 - Only three universities, at most three candidates per school and five overall.
 - Recruitment status reflects what a page says at retrieval time; it can be stale.
 - No login, server-side persistence, cross-device sync, or email sending — by design for this prototype.

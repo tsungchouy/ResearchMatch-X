@@ -4,8 +4,8 @@ import { ApiError, createSessionId, fetchHealth, toErrorBody, type Service } fro
 import { createDemoService } from '../services/demo'
 import { createLiveService } from '../services/live'
 import { initialState, isTerminal, reducer, type Action, type AppMode, type AppState } from './reducer'
+import { loadSession, saveSession } from './sessionPersistence'
 
-const SESSION_FLAG = 'researchmatch.activeSession'
 const POLL_MS = 1500
 const MAX_POLL_FAILURES = 3
 
@@ -18,25 +18,8 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null)
 
-// Read once per page load: StrictMode runs reducer initializers twice.
-let refreshNotice: string | null | undefined
-
-function readRefreshNotice(): string | null {
-  if (refreshNotice !== undefined) return refreshNotice
-  refreshNotice = null
-  try {
-    if (sessionStorage.getItem(SESSION_FLAG)) {
-      sessionStorage.removeItem(SESSION_FLAG)
-      refreshNotice = 'Your previous session wasn’t saved, so its profile and matches are gone. Start again below.'
-    }
-  } catch {
-    // Storage can be unavailable (private mode); the notice is optional.
-  }
-  return refreshNotice
-}
-
 export function AppProvider({ children, initial }: { children: ReactNode; initial?: AppState }) {
-  const [state, dispatch] = useReducer(reducer, undefined, () => initial ?? initialState(createSessionId(), readRefreshNotice()))
+  const [state, dispatch] = useReducer(reducer, undefined, () => initial ?? loadSession() ?? initialState(createSessionId()))
 
   const service = useMemo<Service>(
     () => (state.mode === 'demo' && state.demoPreset ? createDemoService(state.demoPreset) : createLiveService(state.sessionId)),
@@ -53,16 +36,9 @@ export function AppProvider({ children, initial }: { children: ReactNode; initia
     }
   }, [])
 
-  // Only a boolean marker is stored, never resume content.
-  const hasSession = Boolean(state.profileDraft)
   useEffect(() => {
-    try {
-      if (hasSession) sessionStorage.setItem(SESSION_FLAG, '1')
-      else sessionStorage.removeItem(SESSION_FLAG)
-    } catch {
-      // ignore
-    }
-  }, [hasSession])
+    saveSession(state)
+  }, [state])
 
   const jobId = state.search?.jobId ?? null
   const shouldPoll = Boolean(state.search && !state.search.error && !isTerminal(state.search.job))

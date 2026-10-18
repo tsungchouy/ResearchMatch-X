@@ -26,7 +26,6 @@ test('complete Demo flow without an API key', async ({ page, context }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Research matches' })).toBeVisible({ timeout: 10_000 })
   await expect(page.getByRole('heading', { name: '5 matches' })).toBeVisible()
   await expect(page.getByText('Sample data: these people, labs and sources are fictional, not live university pages.')).toBeVisible()
-  await expect(page.getByText('Sample source', { exact: true }).first()).toBeVisible()
   await expect(page.getByText(/%/)).toHaveCount(0)
 
   // Local filters, empty filter state, clear filters.
@@ -47,6 +46,7 @@ test('complete Demo flow without an API key', async ({ page, context }) => {
   await review.click()
   const drawer = page.getByRole('dialog')
   await expect(drawer.getByRole('heading', { name: 'Recruitment status' })).toBeVisible()
+  await expect(drawer.getByText(/Sample source/).first()).toBeVisible()
   await expect(drawer.getByRole('button', { name: 'Prepare outreach' })).toBeDisabled()
   await page.keyboard.press('Escape')
   await expect(drawer).toBeHidden()
@@ -80,6 +80,12 @@ test('complete Demo flow without an API key', async ({ page, context }) => {
   await page.getByLabel('Availability').fill('from June 2027 to August 2027')
   await expect(page.getByText('Your details changed after this draft was written.')).toBeVisible()
   await expect(body).toHaveValue('My own words for Professor Marrow.')
+
+  // The complete workflow and user edits survive a refresh.
+  await page.reload()
+  await expect(page).toHaveURL(/\/outreach$/)
+  await expect(body).toHaveValue('My own words for Professor Marrow.')
+  await expect(page.getByLabel('Availability')).toHaveValue('from June 2027 to August 2027')
 
   // Copy and download.
   await page.getByRole('button', { name: 'Copy email' }).click()
@@ -183,7 +189,7 @@ test('validation focuses the first invalid field and keeps input', async ({ page
   await expect(page.getByLabel('Major')).toHaveValue('Computer Science')
 })
 
-test('locked routes redirect with an explanation, and refresh does not fake a restore', async ({ page }) => {
+test('locked routes redirect with an explanation, and refresh restores local work', async ({ page }) => {
   await page.goto('/outreach')
   await expect(page).toHaveURL(/\/profile$/)
   await expect(page.getByText('Confirm your profile and choose a match before preparing outreach.')).toBeVisible()
@@ -192,8 +198,7 @@ test('locked routes redirect with an explanation, and refresh does not fake a re
   await page.getByRole('button', { name: 'Try a sample profile' }).click()
   await page.getByRole('button', { name: /HCI sample/ }).click()
   await page.reload()
-  await expect(page.getByText(/previous session wasn’t saved/)).toBeVisible()
   await expect(page.getByText('Confirm your profile and choose a match before preparing outreach.')).toHaveCount(0)
-  await expect(page.getByRole('heading', { name: 'Your profile' })).toHaveCount(0)
-  await expect(page.getByText('Live', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible()
+  await expect(page.getByText('Demo · Sample data', { exact: true })).toBeVisible()
 })

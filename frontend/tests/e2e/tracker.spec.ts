@@ -18,7 +18,7 @@ test('save a draft, track its status, and keep it after reload', async ({ page, 
 
   await page.getByRole('button', { name: 'Save to tracker' }).click()
   await expect(page.getByRole('button', { name: 'Saved to tracker' })).toHaveAttribute('aria-disabled', 'true')
-  await expect(page.getByRole('link', { name: /Outreach tracker/ })).toContainText('1')
+  await expect(page.getByRole('link', { name: /Tracker/ })).toContainText('1')
 
   await page.getByLabel('Body').fill('Updated text for the tracker.')
   await page.getByRole('button', { name: 'Update tracker copy' }).click()
@@ -69,7 +69,7 @@ test('save a draft, track its status, and keep it after reload', async ({ page, 
   await page.locator('.tracker-item').first().getByRole('button', { name: 'Remove' }).click()
   await page.getByRole('dialog').getByRole('button', { name: 'Remove' }).click()
   await expect(page.getByRole('heading', { name: 'Nothing tracked yet.' })).toBeVisible()
-  await expect(page.getByRole('link', { name: /Outreach tracker/ })).toHaveText('Outreach tracker')
+  await expect(page.getByRole('link', { name: /Tracker/ })).toHaveText('Tracker')
 })
 
 test('starting over keeps the tracker', async ({ page }) => {
@@ -80,7 +80,7 @@ test('starting over keeps the tracker', async ({ page }) => {
   await expect(dialog.getByText(/stay in this browser/)).toBeVisible()
   await dialog.getByRole('button', { name: 'Start over' }).click()
   await expect(page.getByText('Live', { exact: true })).toBeVisible()
-  await page.getByRole('link', { name: /Outreach tracker/ }).click()
+  await page.getByRole('link', { name: /Tracker/ }).click()
   await expect(page.locator('.tracker-item')).toHaveCount(1)
 })
 

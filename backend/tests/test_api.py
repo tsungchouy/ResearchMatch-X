@@ -2,6 +2,7 @@ import time
 
 from app.config import Settings, get_settings
 from app.main import create_app
+from app.services import profile as profile_service
 from fastapi.testclient import TestClient
 
 from .conftest import RESUME_TEXT, extract_and_confirm, make_pdf, new_session, wait_for_job
@@ -55,7 +56,7 @@ def test_extract_requires_exactly_one_input(client):
     assert short.json()["error"]["code"] == "TEXT_TOO_SHORT"
 
 
-def test_pdf_validation(client):
+def test_pdf_validation(client, monkeypatch):
     headers = new_session()
     ok = client.post(
         "/api/profile/extract", files={"file": ("cv.pdf", make_pdf(RESUME_TEXT), "application/pdf")}, headers=headers
@@ -75,6 +76,7 @@ def test_pdf_validation(client):
         headers=headers,
     )
     assert too_many.json()["error"]["code"] == "PDF_TOO_MANY_PAGES"
+    monkeypatch.setattr(profile_service, "_ocr_pdf_pages", lambda _data, indexes: ["" for _ in indexes])
     no_text = client.post(
         "/api/profile/extract", files={"file": ("cv.pdf", make_pdf(" "), "application/pdf")}, headers=headers
     )
@@ -85,6 +87,13 @@ def test_pdf_validation(client):
         headers=headers,
     )
     assert big.json()["error"]["code"] == "FILE_TOO_LARGE"
+
+
+def test_scanned_pdf_uses_ocr(monkeypatch):
+    ocr_text = "Scanned resume with Python, machine learning, research, and project experience. " * 2
+    monkeypatch.setattr(profile_service, "_ocr_pdf_pages", lambda _data, indexes: [ocr_text for _ in indexes])
+    extracted = profile_service.extract_pdf_text(make_pdf(" "), "scan.pdf", "application/pdf")
+    assert extracted == ocr_text.strip()
 
 
 def test_confirm_validation_and_versions(client):

@@ -5,8 +5,6 @@ import { CharCount } from './CharCount'
 import { ChipInput } from './ChipInput'
 import type { FieldErrors } from '../lib/validation'
 
-const EXAMPLES = ['HCI', 'Machine learning', 'Robotics']
-
 function upcomingMonths(count = 24): string[] {
   const now = new Date()
   const months: string[] = []
@@ -41,10 +39,6 @@ export function PreferencesForm({ preferences, onChange, errors }: PreferencesFo
     update({ schools: SCHOOLS.map((school) => school.id).filter((schoolId) => next.includes(schoolId)) })
   }
 
-  const unusedExamples = EXAMPLES.filter(
-    (example) => !preferences.interests.some((interest) => interest.toLowerCase() === example.toLowerCase()),
-  )
-
   return (
     <section className="section section--ruled" aria-labelledby="preferences-heading">
       <h2 id="preferences-heading" className="section__title">
@@ -62,22 +56,6 @@ export function PreferencesForm({ preferences, onChange, errors }: PreferencesFo
         hint="1–5 topics. Type one and press Enter."
         error={errors.interests}
       />
-      {unusedExamples.length > 0 && preferences.interests.length < 5 && (
-        <div className="examples">
-          <span className="examples__label">Examples:</span>
-          {unusedExamples.map((example) => (
-            <button
-              key={example}
-              type="button"
-              className="btn-chip"
-              onClick={() => update({ interests: [...preferences.interests, example] })}
-            >
-              <span className="visually-hidden">Add </span>
-              {example}
-            </button>
-          ))}
-        </div>
-      )}
 
       <fieldset className="fieldset" aria-describedby={errors.schools ? 'pref-schools-error' : undefined}>
         <legend className="field__label">Universities</legend>
@@ -90,10 +68,7 @@ export function PreferencesForm({ preferences, onChange, errors }: PreferencesFo
                 checked={preferences.schools.includes(school.id)}
                 onChange={(event) => toggleSchool(school.id, event.target.checked)}
               />
-              <span>
-                {school.name}
-                <span className="check-row__meta">{school.domain}</span>
-              </span>
+              <span>{school.name}</span>
             </label>
           ))}
         </div>
@@ -172,17 +147,13 @@ export function PreferencesForm({ preferences, onChange, errors }: PreferencesFo
 
       <div className="field">
         <label className="field__label" htmlFor="pref-additional">
-          Additional preferences
+          Additional preferences <span className="field__optional">(optional)</span>
         </label>
-        <p className="field__hint" id="pref-additional-hint">
-          Optional
-        </p>
         <textarea
           id="pref-additional"
           className={`textarea${errors.additional ? ' has-error' : ''}`}
           value={preferences.additional}
           maxLength={500}
-          aria-describedby="pref-additional-hint"
           onChange={(event) => update({ additional: event.target.value })}
         />
         <CharCount length={preferences.additional.length} max={500} />

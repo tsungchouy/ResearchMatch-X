@@ -82,11 +82,14 @@ def map_provider_error(exc: Exception, timeout_code: str = "PROVIDER_TIMEOUT") -
 class OpenAIGateway:
     def __init__(self, settings: Settings):
         self.model = settings.openai_model
+        self.reasoning = (
+            {"effort": settings.openai_reasoning_effort} if settings.openai_reasoning_effort else None
+        )
         self.client = AsyncOpenAI(
             api_key=settings.openai_api_key,
             base_url=settings.openai_base_url,
             timeout=settings.request_timeout_s,
-            max_retries=1,
+            max_retries=0,
         )
 
     async def structured(self, *, instructions: str, input: str, model: type[T], name: str) -> T:
@@ -126,7 +129,11 @@ class OpenAIGateway:
         started = time.monotonic()
         try:
             response = await self.client.responses.create(
-                model=self.model, instructions=instructions, input=input, text=text
+                model=self.model,
+                instructions=instructions,
+                input=input,
+                text=text,
+                **({"reasoning": self.reasoning} if self.reasoning else {}),
             )
         except openai.OpenAIError as exc:
             raise map_provider_error(exc) from exc
@@ -148,6 +155,7 @@ class OpenAIGateway:
                 tools=[{"type": "web_search", "filters": {"allowed_domains": [domain]}}],
                 tool_choice="required",
                 include=["web_search_call.action.sources"],
+                **({"reasoning": self.reasoning} if self.reasoning else {}),
             )
         except openai.OpenAIError as exc:
             raise map_provider_error(exc, timeout_code="SEARCH_TIMEOUT") from exc

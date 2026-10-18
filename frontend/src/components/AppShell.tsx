@@ -63,7 +63,7 @@ export function AppShell() {
         <div className="steps-bar">
           <StepNavigation />
           <NavLink to="/tracker" className="tracker-link">
-            Outreach tracker
+            Tracker
             {records.length > 0 && (
               <span className="tracker-link__count">
                 {records.length}
@@ -95,9 +95,6 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
-      <footer className="site-footer">
-        <div className="container">ResearchMatch · Course prototype</div>
-      </footer>
       <ConfirmDialog
         open={confirmingReset}
         title="Start over?"

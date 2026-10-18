@@ -50,9 +50,7 @@ export function TrackerPage() {
         <h1 ref={headingRef} tabIndex={-1} className="page-title">
           Outreach tracker
         </h1>
-        <p className="page-subtitle">
-          Keep track of who you’ve contacted. Saved in this browser only — nothing is uploaded or sent.
-        </p>
+        <p className="page-subtitle">Saved in this browser.</p>
       </header>
 
       {!persisted && (
@@ -64,7 +62,6 @@ export function TrackerPage() {
       {records.length === 0 ? (
         <div className="empty-state">
           <h2 className="empty-state__title">Nothing tracked yet.</h2>
-          <p>When a draft is ready, choose “Save to tracker” to keep the email here and follow up on it.</p>
           <Link className="btn btn-secondary" to={state.selection ? '/outreach' : '/profile'}>
             {state.selection ? 'Back to outreach' : 'Go to profile'}
           </Link>

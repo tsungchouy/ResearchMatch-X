@@ -206,7 +206,7 @@ def decide_recruitment(
 ) -> tuple[Recruitment, str, list[str]]:
     explanation = item.recruitment_explanation.strip()[:400]
     if item.recruitment == "unknown":
-        return "unknown", explanation or "No current undergraduate recruiting information was found.", []
+        return "unknown", "No source clearly states the current undergraduate recruiting status.", []
     sids = [sid for sid in (resolve(ref) for ref in item.recruitment_source_refs) if sid]
     if not sids:
         return "unknown", "No source was found that states the current recruiting status.", []

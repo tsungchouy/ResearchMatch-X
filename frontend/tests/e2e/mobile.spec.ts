@@ -24,7 +24,7 @@ test('mobile upload input validates files and offers paste instead', async ({ pa
   await expect(page.getByText(longName)).toBeVisible()
   await expectNoHorizontalScroll(page)
   await page.getByRole('button', { name: `Remove ${longName}` }).click()
-  await expect(page.getByText('Drop your resume here')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Choose PDF' })).toBeVisible()
 })
 
 test('mobile drawer is full screen with a reachable close button, and the email is editable', async ({ page }) => {

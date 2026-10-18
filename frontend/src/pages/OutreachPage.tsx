@@ -78,7 +78,6 @@ export function OutreachPage({ candidate }: { candidate: Candidate }) {
         <h1 ref={headingRef} tabIndex={-1} className="page-title">
           Prepare your outreach
         </h1>
-        <p className="page-subtitle">Choose what to share, then make the draft your own.</p>
       </header>
 
       <div className="outreach-layout">

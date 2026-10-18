@@ -33,11 +33,13 @@ def make_gateway(handler) -> tuple[OpenAIGateway, list[dict]]:
 
 def test_web_search_request_shape_and_source_parsing():
     gateway, requests = make_gateway(respond)
+    gateway.reasoning = {"effort": "low"}
     result = asyncio.run(gateway.web_search(instructions="find", input="interests", domain="cmu.edu"))
     request = requests[0]
     assert request["tools"] == [{"type": "web_search", "filters": {"allowed_domains": ["cmu.edu"]}}]
     assert request["include"] == ["web_search_call.action.sources"]
     assert request["tool_choice"] == "required"
+    assert request["reasoning"] == {"effort": "low"}
     assert result.search_call_count == 1
     urls = [s.url for s in result.sources]
     assert "https://www.cs.cmu.edu/~stub-lin" in urls

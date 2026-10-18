@@ -75,7 +75,6 @@ export function FileDropzone({ file, error, onFile, onLocalError, onPasteInstead
           onDrop={onDrop}
         >
           <Upload size={20} strokeWidth={1.75} aria-hidden="true" className="dropzone__icon" />
-          <p className="dropzone__title">Drop your resume here</p>
           <button
             type="button"
             className="btn-link"
@@ -83,10 +82,10 @@ export function FileDropzone({ file, error, onFile, onLocalError, onPasteInstead
             aria-describedby={`${hintId}${error ? ` ${errorId}` : ''}`}
             disabled={disabled}
           >
-            or choose a PDF
+            Choose PDF
           </button>
           <p id={hintId} className="dropzone__hint">
-            Text-based PDF · Up to 5 MB · Up to 10 pages
+            or drop it here · 5 MB max
           </p>
         </div>
       )}

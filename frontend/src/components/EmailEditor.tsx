@@ -112,7 +112,6 @@ export function EmailEditor({
 
       {!hasDraft ? (
         <div className="editor__empty">
-          <p>Your draft will appear here after you review the details.</p>
           <div className="editor__actions">
             <button
               type="button"
@@ -172,7 +171,7 @@ export function EmailEditor({
               type="button"
               className="btn btn-secondary"
               aria-disabled={trackerState === 'saved' || undefined}
-              aria-describedby="tracker-note"
+              aria-describedby={trackerState === 'unsaved' ? undefined : 'tracker-note'}
               onClick={() => trackerState !== 'saved' && onSaveToTracker()}
             >
               {SAVE_LABEL[trackerState]}
@@ -187,17 +186,15 @@ export function EmailEditor({
               {loading ? 'Writing your draft…' : 'Regenerate'}
             </button>
           </div>
-          <p id="tracker-note" className="field__hint">
-            {trackerState === 'unsaved' ? (
-              'Keep this email and track replies on this device.'
-            ) : (
+          {trackerState !== 'unsaved' && (
+            <p id="tracker-note" className="field__hint">
               <>
                 {trackerState === 'changed' ? 'Your tracker has an earlier version of this email. ' : 'In your tracker'}
                 {trackerStatus && trackerState === 'saved' ? ` · ${trackerStatus}. ` : ''}
                 <Link to="/tracker">Open tracker</Link>
               </>
-            )}
-          </p>
+            </p>
+          )}
           {generateHint && (
             <p id="generate-hint" className="field__hint">
               {generateHint}

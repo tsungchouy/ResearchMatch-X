@@ -3,19 +3,16 @@ import { citationNumbers, FIT_LABEL } from '../lib/format'
 import { schoolName, type Candidate } from '../types/api'
 import { Citations } from './Citations'
 import { RecruitmentBadge } from './RecruitmentBadge'
-import { SourceLink } from './SourceLink'
 
 interface MatchRowProps {
   candidate: Candidate
   dismissed: boolean
-  openedSourceIds: string[]
   onReview: (candidate: Candidate, trigger: HTMLElement) => void
   onDismiss: (id: string) => void
   onRestore: (id: string) => void
-  onSourceOpen: (sourceId: string) => void
 }
 
-export function MatchRow({ candidate, dismissed, openedSourceIds, onReview, onDismiss, onRestore, onSourceOpen }: MatchRowProps) {
+export function MatchRow({ candidate, dismissed, onReview, onDismiss, onRestore }: MatchRowProps) {
   const numbers = citationNumbers(candidate)
   const headingId = `match-${candidate.id}`
 
@@ -65,33 +62,6 @@ export function MatchRow({ candidate, dismissed, openedSourceIds, onReview, onDi
           {candidate.recruitmentExplanation}
           <Citations ids={candidate.recruitmentSourceIds} numbers={numbers} />
         </span>
-      </div>
-
-      {candidate.unknowns.length > 0 && (
-        <div className="match__block">
-          <h4 className="match__label">Still to confirm</h4>
-          <ul className="match__unknowns">
-            {candidate.unknowns.slice(0, 2).map((unknown) => (
-              <li key={unknown}>{unknown}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="match__block">
-        <h4 className="match__label">Sources</h4>
-        <ul className="sources">
-          {candidate.sources.map((source) => (
-            <li key={source.id}>
-              <SourceLink
-                source={source}
-                number={numbers.get(source.id) ?? 0}
-                opened={openedSourceIds.includes(source.id)}
-                onOpen={onSourceOpen}
-              />
-            </li>
-          ))}
-        </ul>
       </div>
 
       <div className="match__actions">

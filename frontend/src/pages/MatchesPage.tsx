@@ -5,13 +5,12 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EvidenceDrawer } from '../components/EvidenceDrawer'
 import { InlineAlert } from '../components/InlineAlert'
 import { MatchRow } from '../components/MatchRow'
-import { formatDateTime, joinList, RECRUITMENT_LABEL } from '../lib/format'
+import { joinList, RECRUITMENT_LABEL } from '../lib/format'
 import { createRequestKey, toErrorBody } from '../services/client'
 import { useApp } from '../state/context'
-import { availabilityText, isTerminal } from '../state/reducer'
+import { isTerminal } from '../state/reducer'
 import { schoolName, type ApiErrorBody, type Candidate, type Recruitment, type SchoolId, type SearchJob } from '../types/api'
 
-const ARRANGEMENT_LABEL = { any: 'No preference', onsite: 'On-site', remote: 'Remote', hybrid: 'Hybrid' } as const
 const SHORT_NAME: Record<SchoolId, string> = { cmu: 'Carnegie Mellon', stanford: 'Stanford', uw: 'University of Washington' }
 const SCHOOL_STATUS_LABEL = { pending: 'Pending', searching: 'Searching', complete: 'Complete', failed: 'Failed' } as const
 
@@ -35,7 +34,6 @@ export function MatchesPage() {
   const [busy, setBusy] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
-  const interests = profile.preferences.interests
   const searchedSchools = (job ?? displayed)?.schools ?? profile.preferences.schools.map((schoolId) => ({
     schoolId,
     name: schoolName(schoolId),
@@ -124,11 +122,6 @@ export function MatchesPage() {
       <h1 ref={headingRef} tabIndex={-1} className="page-title">
         {title}
       </h1>
-      <p className="page-subtitle">
-        {showProgress
-          ? `Searching ${joinList(searchedSchools.map((school) => school.name))} for ${joinList(interests)}.`
-          : `Based on your interests in ${joinList(interests)}.`}
-      </p>
     </header>
   )
 
@@ -195,7 +188,6 @@ export function MatchesPage() {
             <span className="skeleton__line skeleton__line--short" />
             <span className="skeleton__line" />
           </div>
-          <p className="progress__note">You can keep this page open while we search.</p>
           {actionError && (
             <InlineAlert tone="error">
               <p>{actionError.message}</p>
@@ -241,24 +233,6 @@ export function MatchesPage() {
       {header}
       <div className="matches-layout">
         <aside className="summary" aria-label="Search summary and filters">
-          <dl className="summary__list">
-            <div>
-              <dt>Universities</dt>
-              <dd>{searchedSchools.map((school) => school.name).join(', ')}</dd>
-            </div>
-            <div>
-              <dt>Interests</dt>
-              <dd>{interests.join(', ')}</dd>
-            </div>
-            <div>
-              <dt>Availability</dt>
-              <dd>{availabilityText(profile) || 'Not sure yet'}</dd>
-            </div>
-            <div>
-              <dt>Work arrangement</dt>
-              <dd>{ARRANGEMENT_LABEL[profile.preferences.arrangement]}</dd>
-            </div>
-          </dl>
           <Link to="/profile" className="text-link">
             Edit profile
           </Link>
@@ -320,7 +294,6 @@ export function MatchesPage() {
             <h2 id="results-count" className="results__count">
               {candidates.length === 1 ? '1 match' : `${candidates.length} matches`}
             </h2>
-            {displayed?.retrievedAt && <p className="results__date">Retrieved {formatDateTime(displayed.retrievedAt)}</p>}
             {displayed?.mode === 'demo' && (
               <p className="results__note">Sample data: these people, labs and sources are fictional, not live university pages.</p>
             )}
@@ -413,14 +386,12 @@ export function MatchesPage() {
                   key={candidate.id}
                   candidate={candidate}
                   dismissed={state.dismissedIds.includes(candidate.id)}
-                  openedSourceIds={state.openedSourceIds}
                   onReview={(cand, element) => {
                     trigger.current = element
                     setReviewing(cand)
                   }}
                   onDismiss={(id) => dispatch({ type: 'DISMISS_CANDIDATE', candidateId: id })}
                   onRestore={(id) => dispatch({ type: 'RESTORE_CANDIDATE', candidateId: id })}
-                  onSourceOpen={(sourceId) => dispatch({ type: 'SOURCE_OPENED', sourceId })}
                 />
               ))}
             </ol>

@@ -76,7 +76,6 @@ export const ProfileEditor = forwardRef<HTMLHeadingElement, ProfileEditorProps>(
       <h2 id="profile-heading" className="section__title" ref={headingRef} tabIndex={-1}>
         Your profile
       </h2>
-      <p className="section__lead">Check these details. You can edit anything before searching.</p>
 
       <div className="form-grid">
         <TextField
@@ -115,10 +114,7 @@ export const ProfileEditor = forwardRef<HTMLHeadingElement, ProfileEditorProps>(
 
       <fieldset className="fieldset">
         <legend className="field__label">Experience</legend>
-        <p className="field__hint">Up to {MAX_EXPERIENCES}. You choose which ones to mention in an email later.</p>
-        {profile.experiences.length === 0 && (
-          <p className="empty-line">No experience added yet. That’s fine — you can still search with your education and interests.</p>
-        )}
+        {profile.experiences.length === 0 && <p className="empty-line">No experience added.</p>}
         <ol className="experience-list">
           {profile.experiences.map((exp, index) => {
             const titleError = errors[`exp-${exp.id}-title`]

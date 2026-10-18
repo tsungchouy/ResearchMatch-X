@@ -157,7 +157,6 @@ export function ProfilePage() {
           onClick={() => (state.demoPreset === preset.id ? undefined : requestSwitch('demo', preset.id))}
         >
           <span className="preset__label">{preset.label}</span>
-          <span className="preset__description">{preset.description}</span>
         </button>
       ))}
     </div>
@@ -167,9 +166,8 @@ export function ProfilePage() {
     <div className="page">
       <header className="page-header">
         <h1 ref={headingRef} tabIndex={-1} className="page-title">
-          Find research that fits your interests.
+          Find research matches
         </h1>
-        <p className="page-subtitle">Start with your background. Review the evidence before reaching out.</p>
       </header>
 
       <div className="profile-layout">
@@ -190,11 +188,7 @@ export function ProfilePage() {
             </InlineAlert>
           )}
 
-          <section className="section" aria-labelledby="background-heading">
-            <h2 id="background-heading" className="section__title">
-              Your background
-            </h2>
-
+          <section className="section" aria-label="Your background">
             {isDemo ? (
               <InlineAlert
                 tone="warning"
@@ -205,10 +199,7 @@ export function ProfilePage() {
                   </button>
                 }
               >
-                <p>
-                  This profile comes from a sample. You can edit it, but matches and the email draft stay sample data — no resume is
-                  analyzed and no live search runs.
-                </p>
+                <p>No resume or live search is used.</p>
                 {presetChooser}
               </InlineAlert>
             ) : (
@@ -316,18 +307,6 @@ export function ProfilePage() {
             </>
           )}
         </div>
-
-        <aside className="how-it-works" aria-labelledby="how-heading">
-          <h2 id="how-heading" className="how-it-works__title">
-            How it works
-          </h2>
-          <ol className="how-it-works__steps">
-            <li>Share your background and research interests.</li>
-            <li>Review faculty matches and their sources.</li>
-            <li>Choose what to include in an outreach draft.</li>
-          </ol>
-          <p className="how-it-works__note">A research match does not confirm an open position.</p>
-        </aside>
       </div>
 
       <ConfirmDialog

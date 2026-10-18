@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
+from starlette.concurrency import run_in_threadpool
 
 from ..deps import get_gateway, get_session
 from ..errors import AppError
@@ -26,7 +27,7 @@ async def extract(
     if has_file:
         assert file is not None
         data = await file.read(MAX_PDF_BYTES + 1)
-        source_text = extract_pdf_text(data, file.filename, file.content_type)
+        source_text = await run_in_threadpool(extract_pdf_text, data, file.filename, file.content_type)
     else:
         source_text = validate_text_input(text or "")
     profile = await extract_profile(gateway, source_text)
